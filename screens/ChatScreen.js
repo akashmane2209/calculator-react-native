@@ -1,20 +1,20 @@
 import React, { Component } from 'react'
-import { Platform, KeyboardAvoidingView, SafeAreaView } from 'react-native'
-import PropTypes from 'prop-types'
-import { GiftedChat } from 'react-native-gifted-chat'
-import emojiUtils from 'emoji-utils';
+import { Platform, KeyboardAvoidingView, SafeAreaView, View, TouchableOpacity, Text, Clipboard } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { GiftedChat, Send } from 'react-native-gifted-chat'
 import Firebase from './../config/firebase.config'
-import SlackMessage from './Slack-Style-Chat/SlackMessage'
-
+import ChatFooter from './components/ChatFooter'
 export default class ChatScreen extends Component {
     state = {
-        messages: []
+        messages: [],
+        isTyping: false,
+        replyMessage: ""
+
     }
     get user() {
         return {
             _id: Firebase.uid,
             name: this.props.route.params.name,
-            // avatar: 'AM'
         }
     }
     componentDidMount() {
@@ -28,29 +28,59 @@ export default class ChatScreen extends Component {
         Firebase.off()
     }
 
-    renderMessage(props) {
-        const {
-            currentMessage: { text: currText },
-        } = props
 
-        let messageTextStyle
-
-        // Make "pure emoji" messages much bigger than plain text.
-        if (currText && emojiUtils.isPureEmojiString(currText)) {
-            messageTextStyle = {
-                fontSize: 28,
-                // Emoji get clipped if lineHeight isn't increased; make it consistent across platforms.
-                lineHeight: Platform.OS === 'android' ? 34 : 30,
-            }
-        }
-
-        return <SlackMessage {...props} messageTextStyle={messageTextStyle} />
+    renderSend(props) {
+        return (
+            <Send
+                {...props}
+            >
+                <View style={{ marginRight: 20 }}>
+                    <View style={{
+                        width: 35,
+                        height: 35,
+                        borderRadius: 35 / 2,
+                        backgroundColor: '#9075e3',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                    >
+                        <Ionicons name="md-arrow-round-forward" size={24} color="white" />
+                    </View>
+                </View>
+            </Send>
+        );
     }
-
+    replyToMessage = (context, message) => {
+        console.log(context, message)
+        const options = [
+            'Reply',
+            'Copy Text',
+            'Cancel',
+        ];
+        const cancelButtonIndex = options.length - 1;
+        context.actionSheet().showActionSheetWithOptions({
+            options,
+            cancelButtonIndex,
+        },
+            (buttonIndex) => {
+                switch (buttonIndex) {
+                    case 0:
+                        this.setState({
+                            replyMessage: message.text
+                        })
+                    case 1:
+                        Clipboard.setString(message.text);
+                        break;
+                }
+            });
+    }
     render() {
-        const chat = <GiftedChat messages={this.state.messages} user={this.user} onSend={Firebase.send}
-        // renderMessage={this.renderMessage}
-
+        const chat = <GiftedChat messages={this.state.messages} user={this.user} onSend={(messages) => { Firebase.send(messages); this.setState({ replyMessage: '' }) }} alwaysShowSend={true}
+            renderChatFooter={() => <ChatFooter replyTo={this.user.name} replyMsg={this.state.replyMessage} />}
+            onLongPress={(context, message) => this.replyToMessage(context, message)}
+            renderSend={this.renderSend}
+            scrollToBottom={true}
+            showAvatarForEveryMessage={true}
         />
 
         if (Platform.OS === 'android') {
