@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-
 import LoginScreen from './screens/LoginScreen'
 import ChatScreen from './screens/ChatScreen'
 import Calculator from './screens/Calculator'

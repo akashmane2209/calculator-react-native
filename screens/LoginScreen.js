@@ -2,12 +2,37 @@ import React, { Component } from 'react'
 import { Text, StyleSheet, View, TouchableOpacity } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { Ionicons } from '@expo/vector-icons'
+import { AsyncStorage } from 'react-native';
+
 export default class LoginScreen extends Component {
     state = {
         name: ''
     }
-    continue = () => {
-        this.props.navigation.navigate('Chat', { name: this.state.name })
+    async componentDidMount() {
+        try {
+            const value = await AsyncStorage.getItem('user');
+            if (value !== null) {
+                // We have data!!
+                console.log(value);
+                this.props.navigation.navigate('Chat', { name: value })
+
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    }
+
+    continue = async () => {
+        try {
+            if (this.state.name.length > 0) {
+                this.props.navigation.navigate('Chat', { name: this.state.name })
+            }
+            await AsyncStorage.setItem('user', this.state.name);
+        } catch (error) {
+            // Error saving data
+            console.log(error)
+        }
+
     }
     render() {
         return (
