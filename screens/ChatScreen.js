@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { Platform, KeyboardAvoidingView, SafeAreaView, View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native'
+import { Platform, KeyboardAvoidingView, SafeAreaView, View, TouchableOpacity, Text, StyleSheet, Image, BackHandler } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { GiftedChat, Send, Message, Bubble, Time } from 'react-native-gifted-chat'
 import Firebase from './../config/firebase.config'
@@ -19,6 +19,11 @@ export default class ChatScreen extends Component {
         has_emoji: false,
         text: ''
     }
+    backAction = () => {
+        BackHandler.exitApp()
+    };
+
+
     get user() {
         return {
             _id: Firebase.uid,
@@ -33,6 +38,10 @@ export default class ChatScreen extends Component {
             }), () => {
             })
         })
+        this.backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            this.backAction
+        );
     }
     getMessage = (message) => {
         const { _id,
@@ -62,6 +71,8 @@ export default class ChatScreen extends Component {
     }
     componentWillUnmount() {
         Firebase.off()
+        this.backHandler.remove();
+
     }
 
 
@@ -121,7 +132,6 @@ export default class ChatScreen extends Component {
         );
     }
     renderMessage = (msg) => {
-        // console.log(msg.currentMessage, 'renderMessage')
         if (msg.currentMessage.reply_to) {
             const { reply_to,
                 reply_to_msg } = msg.currentMessage;
@@ -135,37 +145,39 @@ export default class ChatScreen extends Component {
             return <Message {...modified_msg} />
         }
         const renderBubble = (props) => {
-            return (<Bubble {...props}
-                // renderTime={this.renderTime}
-                wrapperStyle={{
-                    left: {
-                        backgroundColor: '#ffffff',
-                    },
-                    right: {
-                        backgroundColor: '#dcf8c7',
-                    }
-                }}
-                textStyle={{
-                    right: {
-                        color: "black"
-                    },
-                    left: {
-                        color: "black"
-                    }
-                }}
-                renderTime={(props) => {
-                    return (
-                        <Time {...props} timeTextStyle={{
-                            right: {
-                                color: 'black',
-                            },
-                            left: {
-                                color: 'black',
-                            }
-                        }} />
-                    )
-                }}
-            />)
+            return (<TouchableOpacity onLongPress={() => this.onLongPress({}, props.currentMessage)}>
+                <Bubble {...props}
+                    // renderTime={this.renderTime}
+                    wrapperStyle={{
+                        left: {
+                            backgroundColor: '#ffffff',
+                        },
+                        right: {
+                            backgroundColor: '#dcf8c7',
+                        }
+                    }}
+                    textStyle={{
+                        right: {
+                            color: "black"
+                        },
+                        left: {
+                            color: "black"
+                        }
+                    }}
+                    renderTime={(props) => {
+                        return (
+                            <Time {...props} timeTextStyle={{
+                                right: {
+                                    color: 'black',
+                                },
+                                left: {
+                                    color: 'black',
+                                }
+                            }} />
+                        )
+                    }}
+                />
+            </TouchableOpacity>)
         }
         let modified_msg = {
             ...msg,
@@ -178,7 +190,6 @@ export default class ChatScreen extends Component {
 
     }
     onSend = (message) => {
-        console.log(message, this.state, 'chat')
         const { reply_to, reply_to_msg } = this.state;
         if (reply_to.length > 0 && reply_to_msg.length > 0) {
             message[0].reply = {

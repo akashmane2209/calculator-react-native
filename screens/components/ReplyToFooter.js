@@ -43,10 +43,12 @@ const styles = StyleSheet.create({
         paddingTop: 5
     },
     close_button_container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        paddingRight: 10
+        position: 'absolute',
+        paddingRight: 10,
+        height: 20,
+        top: 5,
+        left: '95%'
+
     }
 });
 

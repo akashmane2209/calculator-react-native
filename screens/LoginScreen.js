@@ -13,7 +13,6 @@ export default class LoginScreen extends Component {
             const value = await AsyncStorage.getItem('user');
             if (value !== null) {
                 // We have data!!
-                console.log(value);
                 this.props.navigation.navigate('Chat', { name: value })
 
             }

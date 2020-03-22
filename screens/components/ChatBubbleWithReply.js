@@ -6,7 +6,6 @@ class ChatBubbleWithReply extends React.Component {
 
     render() {
         const { position, children, currentMessage, onLongPress } = this.props;
-        console.log(currentMessage, 'longPress')
         // if the position is right it means that it's the current user who sent the message
         const reply_header = `${currentMessage.reply_to}`;
         const reply_to_color = 'black'

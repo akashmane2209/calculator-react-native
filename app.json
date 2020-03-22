@@ -29,6 +29,7 @@
     "android": {
       "package": "com.makash.calculator",
       "versionCode": 1
-    }
+    },
+    "description": ""
   }
 }
